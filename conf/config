@@ -1,0 +1,6 @@
+BASEDIR="/mnt/media/photos"
+UNPROCESSED="$BASEDIR/unprocessed"
+PROCESSED="$BASEDIR/processed"
+THUMBNAILS="$BASEDIR/thumbnails"
+ALBUMS="$BASEDIR/albums"
+TRASH="$BASEDIR/trash"
