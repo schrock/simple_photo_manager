@@ -1,0 +1,23 @@
+{
+  "name": "simple_photo_manager",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node --env-file=conf/config src/server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/schrock/simple_photo_manager.git"
+  },
+  "author": "",
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/schrock/simple_photo_manager/issues"
+  },
+  "homepage": "https://github.com/schrock/simple_photo_manager#readme",
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}

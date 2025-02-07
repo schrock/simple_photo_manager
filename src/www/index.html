@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Simple Photo Manager</title>
+<style>
+	html, body {
+		width: 100%;
+		height: 100%;
+		margin: 0px;
+	}
+	#header {
+		background-color: lightblue;
+		height: 25px;
+		display: flex;
+		flex-direction: row;
+		justify-content: space-evenly;
+		align-items: center;
+	}
+	#main {
+		background-color: lightgray;
+		position: absolute;
+		top: 25px;
+		bottom: 0px;
+		width: 100%;
+		overflow-x: hidden;
+		overflow-y: scroll;
+	}
+	.photosBox {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+		justify-content: space-around;
+	}
+	.placeholder {
+		width: 200px;
+		height: 200px;
+		border: 1px solid black;
+	}
+	.photo {
+		border: 0px solid blue;
+	}
+</style>
+</head>
+<body>
+
+<div id="header">
+	<div><a href="javascript:showPhotos();">Photos (<span id="photoCount">0</span>)</a></div>
+	<div><a href="javascript:showAlbums();">Albums (<span id="albumCount">0</span>)</a></div>
+	<div><a href="javascript:showTrash();">Trash (<span id="trashCount">0</span>)</a></div>
+</div>
+
+<div id="main">
+</div>
+
+<script src="index.js"></script>
+</body>
+</html>
