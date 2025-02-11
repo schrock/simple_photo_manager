@@ -1,3 +1,4 @@
+PORT=8081
 UNPROCESSED="/mnt/media/photos/unprocessed"
 PROCESSED="/mnt/media/photos/processed"
 THUMBNAILS="/mnt/media/photos/thumbnails"
