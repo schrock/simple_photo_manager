@@ -27,7 +27,6 @@ document.onreadystatechange = function () {
 async function initApplication() {
 	let dataObject = await fetch("data");
 	let data = await dataObject.json();
-	console.log(data);
 	photoList = data.photos;
 	albums = data.albums;
 	trashList = data.trash;
@@ -87,6 +86,17 @@ function loadVisibleThumbnails() {
 				if (yearMonth == id.substr(0, 6)) {
 					htmlStringArray.push('<div class="photo"><a href="photo?id=' + id + '" target="_blank"><img src="thumbnail?id=' + id + '"></a></div>');
 				}
+			}
+			photosDiv.innerHTML = htmlStringArray.join("");
+			break;
+		}
+	}
+	for (let [albumName, albumContents] of Object.entries(albums)) {
+		var photosDiv = document.getElementById(albumName);
+		if (photosDiv !== null && photosDiv.childNodes.length == 0 && isInViewport(photosDiv)) {
+			htmlStringArray = [];
+			for (id of albumContents) {
+				htmlStringArray.push('<div class="photo"><a href="photo?id=' + id + '" target="_blank"><img src="thumbnail?id=' + id + '"></a></div>');
 			}
 			photosDiv.innerHTML = htmlStringArray.join("");
 			break;
