@@ -60,23 +60,25 @@ done < "$TMP_FILE"
 
 # create thumbnails for jpg, png, gif files
 find $PROCESSED -maxdepth 1 -type f -regex '.*\.\(jpg\|png\|gif\)$' > "$TMP_FILE"
+find $TRASH -maxdepth 1 -type f -regex '.*\.\(jpg\|png\|gif\)$' >> "$TMP_FILE"
 while read -r filepath; do
 	filename=${filepath##*/}
 	thumbnail="${THUMBNAILS}/${filename}.jpg"
 	if [[ ! -f "$thumbnail" ]]; then
 		echo "Creating thumbnail at $thumbnail" | tee -a "$LOG_FILE"
-		convert -thumbnail x200 -quality 70 "$filepath" "$thumbnail" |& tee -a "$LOG_FILE"
+		convert -thumbnail x200 -quality 80 -auto-orient "$filepath" "$thumbnail" |& tee -a "$LOG_FILE"
 	fi
 done < "$TMP_FILE"
 
 # create thumbnails for mp4 files
 find $PROCESSED -maxdepth 1 -type f -regex '.*\.\(mp4\)$' > "$TMP_FILE"
+find $TRASH -maxdepth 1 -type f -regex '.*\.\(mp4\)$' >> "$TMP_FILE"
 while read -r filepath; do
 	filename=${filepath##*/}
 	thumbnail="${THUMBNAILS}/${filename}.jpg"
 	if [[ ! -f "$thumbnail" ]]; then
 		echo "Creating thumbnail at $thumbnail" | tee -a "$LOG_FILE"
-		ffmpeg -nostdin -hide_banner -loglevel error -y -i "$filepath" -vf "thumbnail=120,scale=w=-1:h=200" -frames:v 1 -q:v 8 "$thumbnail" |& tee -a "$LOG_FILE"
+		ffmpeg -nostdin -hide_banner -loglevel error -y -i "$filepath" -vf "thumbnail=120,scale=w=-1:h=200" -frames:v 1 -q:v 5 "$thumbnail" |& tee -a "$LOG_FILE"
 	fi
 done < "$TMP_FILE"
 

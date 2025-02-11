@@ -24,7 +24,7 @@ if (cluster.isMaster) {
 	var app = express();
 	app.use(process.env.WEBBASEDIR, express.static('src/www'));
 	app.use(process.env.WEBBASEDIR + '/node_modules', express.static('node_modules'));
-	app.get(process.env.WEBBASEDIR + '/list', getList);
+	app.get(process.env.WEBBASEDIR + '/data', getData);
 	app.get(process.env.WEBBASEDIR + '/photo', getPhoto);
 	app.get(process.env.WEBBASEDIR + '/trash', getTrashPhoto);
 	app.get(process.env.WEBBASEDIR + '/thumbnail', getThumbnail);
@@ -35,20 +35,32 @@ if (cluster.isMaster) {
 	});
 }
 
-function getList(req, res) {
+function getData(req, res) {
+	var data = {};
+
 	var photos = fs.readdirSync(process.env.PROCESSED);
 	photos.sort();
 	photos.reverse();
-	var albums = fs.readdirSync(process.env.ALBUMS);
-	albums.sort();
+	data.photos = photos;
+
+	var albums = new Map();
+	var albumNames = fs.readdirSync(process.env.ALBUMS);
+	albumNames.sort();
+	for (var albumName of albumNames) {
+		var photos = fs.readdirSync(process.env.ALBUMS + '/' + albumName);
+		photos.sort();
+		photos.reverse();
+		albums.set(albumName, photos);
+	}
+	data.albums = Object.fromEntries(albums);
+
 	var trash = fs.readdirSync(process.env.TRASH);
 	trash.sort();
-	var dataList = {};
-	dataList.photos = photos;
-	dataList.albums = albums;
-	dataList.trash = trash;
+	trash.reverse();
+	data.trash = trash;
+
 	res.contentType('application/json');
-	res.send(JSON.stringify(dataList, null, 4));
+	res.send(JSON.stringify(data, null, 4));
 }
 
 function getPhoto(req, res) {

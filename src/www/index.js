@@ -14,7 +14,7 @@ const monthStringMap = new Map([
 ]);
 
 var photoList = [];
-var albumList = []
+var albums = {};
 var trashList = [];
 var yearMonthList = [];
 
@@ -25,19 +25,21 @@ document.onreadystatechange = function () {
 }
 
 async function initApplication() {
-	let dataListObject = await fetch("list");
-	let dataList = await dataListObject.json();
-	photoList = dataList.photos;
-	albumList = dataList.albums;
-	trashList = dataList.trash;
+	let dataObject = await fetch("data");
+	let data = await dataObject.json();
+	console.log(data);
+	photoList = data.photos;
+	albums = data.albums;
+	trashList = data.trash;
 	document.getElementById("photoCount").innerText = photoList.length;
-	document.getElementById("albumCount").innerText = albumList.length;
+	document.getElementById("albumCount").innerText = Object.keys(albums).length;
 	document.getElementById("trashCount").innerText = trashList.length;
 	showPhotos();
 	loadVisibleThumbnails();
 }
 
 function showPhotos() {
+	document.getElementById("sidebar").innerHTML = "";
 	document.getElementById("main").innerHTML = "";
 	yearMonthList = [];
 	for (id of photoList) {
@@ -46,55 +48,51 @@ function showPhotos() {
 		var month = id.substr(4, 2);
 		if (!yearMonthList.includes(yearMonth)) {
 			yearMonthList.push(yearMonth);
-			document.getElementById("main").innerHTML += '<h1>' + year + ' ' + monthStringMap.get(month) + '</h1>';
+			document.getElementById("sidebar").innerHTML += '<h3><a href="#section_' + yearMonth + '">' + year + ' ' + monthStringMap.get(month) + '</a></h3>';
+			document.getElementById("main").innerHTML += '<h2 id="section_' + yearMonth + '">' + year + ' ' + monthStringMap.get(month) + '</h2>';
 			document.getElementById("main").innerHTML += '<div id="' + yearMonth + '" class="photosBox"></div>';
 		}
-		//document.getElementById(yearMonth).innerHTML += '<div class="placeholder"></div>';
 	}
 }
 
 function showAlbums() {
+	document.getElementById("sidebar").innerHTML = "";
 	document.getElementById("main").textContent = "";
-	for (id of albumList) {
-		document.getElementById("main").innerHTML += '<h1><a href="javascript:toggleAlbumThumbnails(\'' + id + '\');">' + id + '</a></h1>';
-		document.getElementById("main").innerHTML += '<div id="' + id + '" class="photosBox"></div>';
+	for (albumName of Object.keys(albums)) {
+		document.getElementById("sidebar").innerHTML += '<h3><a href="#section_' + albumName + '">' + albumName + '</a></h3>';
+		document.getElementById("main").innerHTML += '<h2 id="section_' + albumName + '">' + albumName + '</h2>';
+		document.getElementById("main").innerHTML += '<div id="' + albumName + '" class="photosBox"></div>';
 	}
 }
 
 function showTrash() {
+	document.getElementById("sidebar").innerHTML = "<h3>Trash</h3>";
 	document.getElementById("main").textContent = "";
-	document.getElementById("main").innerHTML += '<h1>Trash</h1>';
+	document.getElementById("main").innerHTML += '<h2>Trash</h2>';
 	document.getElementById("main").innerHTML += '<div id="Trash" class="photosBox"></div>';
 	var photosDiv = document.getElementById("Trash");
+	htmlStringArray = [];
 	for (id of trashList) {
-		photosDiv.innerHTML += '<div class="photo"><a href="trash?id=' + id + '" target="_blank"><img src="thumbnail?id=' + id + '"></a></div>';
+		htmlStringArray.push('<div class="photo"><a href="trash?id=' + id + '" target="_blank"><img src="thumbnail?id=' + id + '"></a></div>');
 	}
+	photosDiv.innerHTML = htmlStringArray.join("");
 }
 
 function loadVisibleThumbnails() {
 	for (yearMonth of yearMonthList) {
 		var photosDiv = document.getElementById(yearMonth);
 		if (photosDiv !== null && photosDiv.childNodes.length == 0 && isInViewport(photosDiv)) {
+			htmlStringArray = [];
 			for (id of photoList) {
 				if (yearMonth == id.substr(0, 6)) {
-					photosDiv.innerHTML += '<div class="photo"><a href="photo?id=' + id + '" target="_blank"><img src="thumbnail?id=' + id + '"></a></div>';
+					htmlStringArray.push('<div class="photo"><a href="photo?id=' + id + '" target="_blank"><img src="thumbnail?id=' + id + '"></a></div>');
 				}
 			}
+			photosDiv.innerHTML = htmlStringArray.join("");
 			break;
 		}
 	}
 	setTimeout(loadVisibleThumbnails, 500);
-}
-
-function toggleAlbumThumbnails(id) {
-	var photosDiv = document.getElementById(yearMonth);
-	if (photosDiv !== null) {
-		if (photosDiv.childNodes.length == 0) {
-			
-		} else {
-			photosDiv.innerHTML = "";
-		}
-	}
 }
 
 function isInViewport(element) {
