@@ -10,7 +10,11 @@ const http = require('http');
 const fs = require('fs');
 const crypto = require('crypto');
 
-const sessionIdMap = new Map();
+const safePaths = [
+	process.env.WEBBASEDIR + '/login.html',
+	process.env.WEBBASEDIR + '/login',
+	process.env.WEBBASEDIR + '/logout'
+];
 
 if (cluster.isMaster) {
 	var numCPUs = os.cpus().length;
@@ -27,6 +31,7 @@ if (cluster.isMaster) {
 	var app = express();
 	app.use(bodyParser.urlencoded({extended: true}));
 	app.use(cookieParser());
+	app.use(checkSessionId);
 	app.use(process.env.WEBBASEDIR, express.static('src/www'));
 	app.use(process.env.WEBBASEDIR + '/node_modules', express.static('node_modules'));
 	app.post(process.env.WEBBASEDIR + '/login', postLogin);
@@ -41,6 +46,22 @@ if (cluster.isMaster) {
 	server.listen(httpPort, function () {
 		console.log('worker running on port ' + httpPort + '...');
 	});
+}
+
+function checkSessionId(req, res, next) {
+	if (safePaths.includes(req.path)) {
+		next();
+	} else {
+		// check session id
+		var sessionId = req.cookies.sessionId;
+		if (fs.existsSync('session_cache/' + sessionId)) {
+			next();
+		} else {
+			res.status(303);
+			res.setHeader('Location', 'login.html');
+			res.send('Valid login credentials required for access. Redirecting to login page...');
+		}
+	}
 }
 
 function postLogin(req, res) {
@@ -70,7 +91,7 @@ function postLogin(req, res) {
 		res.send('Invalid credentials.');
 	} else {
 		var sessionId = crypto.randomBytes(16).toString('hex');
-		sessionIdMap.set(sessionId, username);
+		fs.writeFileSync('session_cache/' + sessionId, username, {encoding: 'utf8', flush: true});
 		res.setHeader('Set-Cookie', 'sessionId=' + sessionId + '; Path=' + process.env.WEBBASEDIR);
 		res.status(303);
 		res.setHeader('Location', 'index.html');
@@ -81,7 +102,7 @@ function postLogin(req, res) {
 
 function getLogout(req, res) {
 	var sessionId = req.cookies.sessionId;
-	sessionIdMap.delete(sessionId);
+	fs.unlinkSync('session_cache/' + sessionId);
 	res.setHeader('Set-Cookie', 'sessionId=' + sessionId + '; Path=' + process.env.WEBBASEDIR + '; expires=Thu, 01 Jan 1970 00:00:00 GMT');
 	res.status(303);
 	res.setHeader('Location', 'login.html');
