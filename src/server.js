@@ -66,38 +66,36 @@ function checkSessionId(req, res, next) {
 
 function postLogin(req, res) {
 	var username = req.body.username;
-	var hash = crypto.createHash('sha512').update(req.body.password).digest('hex');
+	var password = req.body.password;
 	var userEntries = fs.readFileSync('conf/users', {encoding: 'utf8', flag: 'r'}).split("\n");
-	var usernameFound = false;
-	var hashMatches = false;
 	for (var userEntry of userEntries) {
-		if (userEntry.indexOf(":") == -1) {
-			continue;
+		if (userEntry.startsWith(username + ":")) {
+			var userEntryParts = userEntry.split(':', 3);
+			var salt = userEntryParts[1];
+			var finalHash = userEntryParts[2];
+			var hash = crypto.createHash('sha512').update(password + salt).digest('hex');
+			for (let i = 0; i < 1000000; i++) {
+				hash = crypto.createHash('sha512').update(hash + password + salt).digest('hex');
+			}
+			if (hash == finalHash) {
+				var sessionId = crypto.randomBytes(32).toString('hex');
+				fs.writeFileSync('session_cache/' + sessionId, username, {encoding: 'utf8', flush: true});
+				res.setHeader('Set-Cookie', 'sessionId=' + sessionId + '; Path=' + process.env.WEBBASEDIR);
+				res.status(303);
+				res.setHeader('Location', 'index.html');
+				res.contentType('text/plain');
+				res.send('Login successful. Redirecting...');
+				return;
+			} else {
+				// only check first matching username entry
+				break;
+			}
 		}
-		var userEntryParts = userEntry.split(":", 2);
-		if (userEntryParts[0] != username) {
-			continue;
-		}
-		usernameFound = true;
-		if (userEntryParts[1] == hash) {
-			hashMatches = true;
-		}
-		break;
 	}
-	if (!usernameFound || !hashMatches) {
-		res.status(303);
-		res.setHeader('Location', 'login.html');
-		res.contentType('text/plain');
-		res.send('Invalid credentials.');
-	} else {
-		var sessionId = crypto.randomBytes(16).toString('hex');
-		fs.writeFileSync('session_cache/' + sessionId, username, {encoding: 'utf8', flush: true});
-		res.setHeader('Set-Cookie', 'sessionId=' + sessionId + '; Path=' + process.env.WEBBASEDIR);
-		res.status(303);
-		res.setHeader('Location', 'index.html');
-		res.contentType('text/plain');
-		res.send('Login successful. Redirecting...');
-	}
+	res.status(303);
+	res.setHeader('Location', 'login.html');
+	res.contentType('text/plain');
+	res.send('Invalid credentials.');
 }
 
 function getLogout(req, res) {
