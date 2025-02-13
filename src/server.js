@@ -32,7 +32,7 @@ if (cluster.isMaster) {
 	app.use(bodyParser.urlencoded({extended: true}));
 	app.use(cookieParser());
 	app.use(checkSessionId);
-	app.use(process.env.WEBBASEDIR, express.static('src/www'));
+	app.use(process.env.WEBBASEDIR + '/', express.static('src/www'));
 	app.use(process.env.WEBBASEDIR + '/node_modules', express.static('node_modules'));
 	app.post(process.env.WEBBASEDIR + '/login', postLogin);
 	app.get(process.env.WEBBASEDIR + '/logout', getLogout);
