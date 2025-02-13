@@ -4,6 +4,7 @@
 const cluster = require('cluster');
 const os = require('os');
 const express = require('express');
+const helmet = require('helmet');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const http = require('http');
@@ -29,6 +30,7 @@ if (cluster.isMaster) {
 	});
 } else {
 	var app = express();
+	app.use(helmet({contentSecurityPolicy: false}));
 	app.use(bodyParser.urlencoded({extended: true}));
 	app.use(cookieParser());
 	app.use(checkSessionId);
