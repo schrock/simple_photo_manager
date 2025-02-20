@@ -11,6 +11,7 @@ const fs = require('fs');
 const crypto = require('crypto');
 
 const safePaths = [
+	process.env.WEBBASEDIR + '/favicon.png',
 	process.env.WEBBASEDIR + '/login.html',
 	process.env.WEBBASEDIR + '/login',
 	process.env.WEBBASEDIR + '/logout'
